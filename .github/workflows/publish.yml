@@ -1,0 +1,53 @@
+name: publish
+
+# Build, test, and publish the @sabhahq/* packages to npm on a GitHub Release.
+# Tag the release with the semver you want published (e.g. v0.1.1); the package
+# versions in packages/*/package.json must already match. pnpm rewrites the
+# `workspace:*` dependency on @sabhahq/telemetry to the concrete version at pack
+# time, so `@sabhahq/core` resolves its dep when installed from the registry.
+#
+# Required repo secret: NPM_TOKEN (an npm automation token for the `sabha` org).
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm -r build
+
+      - run: pnpm -r test
+
+      - run: node scripts/validate.mjs
+
+      # publish telemetry first (core depends on it), then core. --no-git-checks
+      # because the release tag has already been cut. Scoped packages publish
+      # public via each package's publishConfig.access.
+      - name: publish @sabhahq/telemetry
+        run: pnpm --filter @sabhahq/telemetry publish --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: publish @sabhahq/core
+        run: pnpm --filter @sabhahq/core publish --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,0 +1,42 @@
+{
+  "name": "sabha",
+  "owner": {
+    "name": "Vivek Nigam",
+    "email": "vivek.nigam@postman.com"
+  },
+  "metadata": {
+    "description": "Sabha — a marketplace of agentic generals. Ships the data-engineer (Argus) and messenger (Narada) generals plus the shared sabha-core runtime (telemetry, allowlist gate, auto-update).",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "sabha-core",
+      "source": {
+        "source": "npm",
+        "package": "@sabhahq/core",
+        "version": "^0.1.0"
+      },
+      "description": "Shared Sabha runtime: consolidated telemetry, one-time `sabha auth <email>`, the email-allowlist gate, and the auto-update hint. Installed automatically as a dependency of every Sabha agent."
+    },
+    {
+      "name": "argus",
+      "source": {
+        "source": "npm",
+        "package": "@sabhahq/argus",
+        "version": "^0.1.0"
+      },
+      "dependencies": ["sabha-core"],
+      "description": "Data-engineer general: connector-agnostic data verbs (New Relic, Redash) + telemetry baselining + KPI health + instrumentation audits. Review-gated apply."
+    },
+    {
+      "name": "narada",
+      "source": {
+        "source": "npm",
+        "package": "@sabhahq/narada",
+        "version": "^0.1.0"
+      },
+      "dependencies": ["sabha-core"],
+      "description": "Messenger general: connector-agnostic messaging signal triage and reply drafting on top of a watchlist + voice profile (Slack today)."
+    }
+  ]
+}
