@@ -84,17 +84,32 @@ Useful env switches:
 ## Publishing
 
 `@sabhahq/core` + `@sabhahq/telemetry` publish from this repo via
-`.github/workflows/publish.yml` on a GitHub Release (needs an `NPM_TOKEN`
-secret for the `sabha` npm org). `@sabhahq/argus` + `@sabhahq/narada` publish from
-their own repos (each bundles its built MCP `dist/`).
+`.github/workflows/publish.yml` on a GitHub Release. `@sabhahq/argus` +
+`@sabhahq/narada` publish from their own repos (each bundles its built MCP
+`dist/`). All use **npm Trusted Publishing (OIDC)** — no `NPM_TOKEN`.
 
-Before the first publish you must:
+Publishing setup (one-time):
 
-1. Use the `@sabhahq` npm org (already created).
-2. Set a real PostHog project key (replace the bundled placeholder, or rely on
+1. **Bootstrap each new package once, manually** (trusted publishing can only be
+   attached to a package that already exists). From each repo, build then
+   publish with your interactive 2FA code:
+   ```bash
+   # sabha repo
+   pnpm -r build
+   pnpm --filter @sabhahq/telemetry publish --otp=<code>
+   pnpm --filter @sabhahq/core publish --otp=<code>
+   # argus / narada repos
+   pnpm install && pnpm -r build
+   pnpm --filter @sabhahq/argus publish --otp=<code>     # (narada: @sabhahq/narada)
+   ```
+2. **Attach a Trusted Publisher** on npmjs.com for each package → GitHub Actions,
+   owner `viveknigam3003`, the matching repo, and workflow filename
+   (`publish.yml` for core/telemetry, `publish-sabha.yml` for argus/narada).
+   After this, every release publishes tokenless via the workflows above.
+3. Set a real PostHog project key (replace the bundled placeholder, or rely on
    the `SABHA_POSTHOG_KEY` env at runtime — the placeholder fails closed and
    never sends).
-3. Maintain the allowlist with `pnpm allowlist add <email>` (writes
+4. Maintain the allowlist with `pnpm allowlist add <email>` (writes
    `./allowlist.json`, hashes only) and commit it — the gate's default
    `SABHA_ALLOWLIST_URL` is this repo's raw `allowlist.json`, so granting/
    revoking access is just a push (no release).
