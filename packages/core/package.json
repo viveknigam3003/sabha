@@ -1,0 +1,39 @@
+{
+  "name": "@sabhahq/core",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "SEE LICENSE IN LICENSE",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./gate": "./dist/gate.js",
+    "./allowlist": "./dist/allowlist.js",
+    "./auth": "./dist/auth.js",
+    "./update": "./dist/update.js",
+    "./paths": "./dist/paths.js"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "hooks.json",
+    "rules",
+    ".claude-plugin",
+    ".cursor-plugin"
+  ],
+  "bin": {
+    "sabha": "./bin/sabha.js"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@sabhahq/telemetry": "workspace:*",
+    "zod": "^3.23.0"
+  }
+}

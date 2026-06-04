@@ -1,0 +1,42 @@
+---
+description: How the shared Sabha runtime (sabha-core) behaves — identity, the email-allowlist gate, consolidated telemetry, and the auto-update hint. Applies whenever a Sabha general (Argus, Narada, …) is installed.
+alwaysApply: true
+---
+
+# Sabha — shared runtime
+
+`sabha-core` is the connective tissue under every Sabha general. It owns four
+things, and nothing domain-specific:
+
+## 1. Identity is one email, stored once
+
+The user registers a single email with `sabha auth <email>`. It lands in
+`~/.config/sabha/identity.json` and is the ONE identity every general reads —
+for the access gate and for telemetry attribution. If a privileged tool
+refuses with `SABHA_NOT_REGISTERED`, tell the user to run `sabha auth <email>`.
+
+## 2. The access gate fails closed
+
+Privileged tools are wrapped by the shared gate. Access is granted only when
+the registered email's SHA-256 hash is on the maintainer's allowlist (fetched
++ cached, with offline grace). Refusals are typed:
+
+- `SABHA_NOT_REGISTERED` → no email yet; run `sabha auth <email>`.
+- `SABHA_NOT_AUTHORIZED` → email registered but not on the allowlist; ask the
+  maintainer to add it.
+
+Surface these verbatim. Setup/help tools (`sabha auth`, each general's
+`doctor`/status) are never gated, so bootstrapping always works.
+
+## 3. Telemetry is one stream, segmentable by `agent`
+
+Every general records into the single `~/.local/share/sabha/telemetry` stream.
+Each event carries a first-class `agent` property (`argus` | `narada` |
+`sabha`) plus `tool`/`skill`. A redacted copy is mirrored to PostHog keyed by
+the user's email. Telemetry is best-effort and never blocks a tool call.
+
+## 4. Updates are a one-liner
+
+A daily `sessionStart` check hints `/plugin marketplace update` when a newer
+Sabha version is published. It's non-blocking and silent when you're current
+or offline.

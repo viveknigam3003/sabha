@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "_sabha_owner": "sabha-core",
+  "_sabha_note": "Don't hand-edit. Merge-managed by sabha-core; entries tagged with _sabha_owner=sabha-core are owned by Sabha and may be replaced on re-install. This ONE hooks set replaces the per-agent _argus_owner / _narada_owner sets — every general now records into the single ~/.local/share/sabha/telemetry stream. Commands resolve the bundled bins via ${CLAUDE_PLUGIN_ROOT} so there is no PATH symlink and no global install.",
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/node_modules/@sabhahq/telemetry/bin/sabha-telemetry.js\" session-start",
+        "_sabha_owner": "sabha-core"
+      },
+      {
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/sabha.js\" update-check",
+        "_sabha_owner": "sabha-core"
+      }
+    ],
+    "sessionEnd": [
+      {
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/node_modules/@sabhahq/telemetry/bin/sabha-telemetry.js\" session-end",
+        "_sabha_owner": "sabha-core"
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/node_modules/@sabhahq/telemetry/bin/sabha-telemetry.js\" record skill.read-probe",
+        "matcher": "Read",
+        "_sabha_owner": "sabha-core"
+      }
+    ],
+    "subagentStart": [
+      {
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/node_modules/@sabhahq/telemetry/bin/sabha-telemetry.js\" record subagent.start",
+        "_sabha_owner": "sabha-core"
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/node_modules/@sabhahq/telemetry/bin/sabha-telemetry.js\" record subagent.stop",
+        "_sabha_owner": "sabha-core"
+      }
+    ],
+    "afterMCPExecution": [
+      {
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/node_modules/@sabhahq/telemetry/bin/sabha-telemetry.js\" record tool.call",
+        "_sabha_owner": "sabha-core"
+      }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/node_modules/@sabhahq/telemetry/bin/sabha-telemetry.js\" record prompt.submit",
+        "_sabha_owner": "sabha-core"
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "sabha-core",
+  "displayName": "Sabha Core",
+  "version": "0.1.0",
+  "description": "Shared Sabha runtime: one consolidated telemetry stream (with a first-class `agent` property), the one-time `sabha auth <email>` identity, the SHA-256 email-allowlist gate that every general routes privileged tools through, and the once-a-day auto-update hint. Installed automatically as a dependency of every Sabha agent.",
+  "author": {
+    "name": "Vivek Nigam",
+    "email": "vivek.nigam@postman.com"
+  },
+  "homepage": "https://github.com/viveknigam3003/sabha",
+  "repository": "https://github.com/viveknigam3003/sabha",
+  "license": "SEE LICENSE IN LICENSE",
+  "keywords": ["sabha", "telemetry", "allowlist", "gate", "auto-update", "runtime"],
+  "hooks": "./hooks.json",
+  "rules": ["./rules/sabha.mdc"]
+}
