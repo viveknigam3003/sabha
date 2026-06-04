@@ -1,0 +1,37 @@
+{
+  "name": "@sabhahq/telemetry",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "SEE LICENSE IN LICENSE",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./middleware": "./dist/middleware.js",
+    "./event": "./dist/event.js",
+    "./session": "./dist/session.js",
+    "./paths": "./dist/paths.js",
+    "./retention": "./dist/retention.js",
+    "./posthog": "./dist/posthog.js",
+    "./redact": "./dist/redact.js"
+  },
+  "files": ["dist", "bin"],
+  "bin": {
+    "sabha-telemetry": "./bin/sabha-telemetry.js"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "pino": "^10.3.1",
+    "pino-roll": "^4.0.0",
+    "ulid": "^3.0.2",
+    "yaml": "^2.4.0",
+    "zod": "^3.23.0"
+  }
+}
