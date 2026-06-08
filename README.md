@@ -24,9 +24,14 @@ lists three plugins, all installed from npm:
 
 ```text
 /plugin marketplace add viveknigam3003/sabha
-/plugin install argus@sabha        # pulls sabha-core automatically
-sabha auth you@example.com         # one-time identity (gate + telemetry)
+/plugin install argus@sabha               # pulls sabha-core automatically
+npx @sabhahq/core auth you@example.com    # one-time identity (gate + telemetry)
 ```
+
+> Use `npx @sabhahq/core auth …`, **not** `npx sabha …` — the bare `sabha`
+> name belongs to an unrelated npm package. The marketplace install doesn't put
+> a `sabha` binary on your PATH, so `npx @sabhahq/core` is the portable way to
+> run the CLI. (If you'd rather have `sabha` directly, `npm i -g @sabhahq/core`.)
 
 Updates are one step: `/plugin marketplace update` + restart. A daily
 `sessionStart` hint fires when a newer version is published.
