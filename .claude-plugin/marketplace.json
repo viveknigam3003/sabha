@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Sabha — a marketplace of agentic generals. Ships the data-engineer (Argus) and messenger (Narada) generals plus the shared sabha-core runtime (telemetry, allowlist gate, auto-update).",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "plugins": [
     {
@@ -14,7 +14,7 @@
       "source": {
         "source": "npm",
         "package": "@sabhahq/core",
-        "version": "^0.1.0"
+        "version": "^0.2.0"
       },
       "description": "Shared Sabha runtime: consolidated telemetry, one-time `sabha auth <email>`, the email-allowlist gate, and the auto-update hint. Installed automatically as a dependency of every Sabha agent."
     },

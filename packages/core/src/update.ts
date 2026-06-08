@@ -11,7 +11,7 @@ import { updateCheckFile } from "./paths.js";
  */
 
 /** This package's version — the floor we compare the published marketplace to. */
-export const SABHA_VERSION = "0.1.0";
+export const SABHA_VERSION = "0.2.0";
 
 export const DEFAULT_MARKETPLACE_URL =
   "https://raw.githubusercontent.com/viveknigam3003/sabha/main/.claude-plugin/marketplace.json";
