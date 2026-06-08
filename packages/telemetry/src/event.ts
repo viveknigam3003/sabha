@@ -16,6 +16,7 @@ export const eventSourceSchema = z.enum([
   "mcp-argus",
   "mcp-narada",
   "mcp-sabha",
+  "mcp-server",
   "unknown",
 ]);
 export type EventSource = z.infer<typeof eventSourceSchema>;

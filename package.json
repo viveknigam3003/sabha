@@ -12,7 +12,10 @@
     "test": "pnpm -r test",
     "validate": "node scripts/validate.mjs",
     "allowlist": "node scripts/allowlist.mjs",
-    "clean": "pnpm -r exec rm -rf dist .tsbuildinfo"
+    "clean": "pnpm -r exec rm -rf dist .tsbuildinfo",
+    "server:start": "node packages/mcp-server/dist/index.js",
+    "gen-key": "node scripts/gen-user-key.mjs",
+    "gen-hash": "node scripts/gen-user-key.mjs hash"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

@@ -1,2 +1,6 @@
 packages:
   - 'packages/*'
+  # Stage 2a: remote mcp-server depends on argus and narada packages.
+  # These are resolved as file: dependencies in packages/mcp-server/package.json.
+  - '../argus/packages/*'
+  - '../narada/packages/*'

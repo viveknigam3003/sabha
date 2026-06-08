@@ -15,7 +15,15 @@ import { NotAuthorizedError, NotRegisteredError } from "./errors.js";
  * per-call cost is a Set lookup — no network, no disk, no latency. (Stage 2's
  * remote MCP revisits this with instant server-side revoke.)
  */
-export interface GateOptions extends AllowlistOptions {}
+export interface GateOptions extends AllowlistOptions {
+  /**
+   * Override for resolving the current user's email. When provided (remote
+   * server mode), this is called instead of reading from
+   * `~/.config/sabha/identity.json`. Return undefined to fall back to the
+   * local identity file path. Must return a pre-validated email string.
+   */
+  getEmail?: () => string | undefined;
+}
 
 export interface GuardContext {
   /** Which general owns the tool (for the gate.decision telemetry row). */
@@ -57,7 +65,10 @@ export function createGate(opts: GateOptions = {}): Gate {
       return { allowed: true, reason: "gate disabled via env", source: "disabled" };
     }
 
-    const email = readEmailSync(env);
+    // In server mode, email is resolved from the bearer token by the HTTP
+    // middleware and injected via opts.getEmail(). In stdio mode, fall back
+    // to the local identity file.
+    const email = opts.getEmail ? opts.getEmail() : readEmailSync(env);
     if (!email) {
       return {
         allowed: false,

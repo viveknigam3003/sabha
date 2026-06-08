@@ -14,7 +14,8 @@
     "./allowlist": "./dist/allowlist.js",
     "./auth": "./dist/auth.js",
     "./update": "./dist/update.js",
-    "./paths": "./dist/paths.js"
+    "./paths": "./dist/paths.js",
+    "./request-context": "./dist/requestContext.js"
   },
   "files": [
     "dist",

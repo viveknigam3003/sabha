@@ -44,3 +44,8 @@ export {
 } from "./paths.js";
 export { loadSabhaEnv, parseDotenv } from "@sabhahq/telemetry";
 export { runCli } from "./cli.js";
+export {
+  getRemoteContext,
+  runWithRemoteContext,
+  type RemoteRequestContext,
+} from "./requestContext.js";

@@ -129,7 +129,36 @@ async function fetchRemote(
 }
 
 /**
+ * Parses the SABHA_ALLOWLIST_HASHES env var (JSON array of hex SHA-256
+ * strings) when present. Returns undefined if the var is absent or invalid.
+ * Used by the remote MCP server where the allowlist is baked into deploy-time
+ * env instead of fetched from a URL.
+ */
+function parseInlineHashes(
+  env: NodeJS.ProcessEnv,
+): AllowlistSnapshot | undefined {
+  const raw = env.SABHA_ALLOWLIST_HASHES;
+  if (!raw) return undefined;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (
+      !Array.isArray(parsed) ||
+      !parsed.every((h) => typeof h === "string")
+    ) {
+      return undefined;
+    }
+    return {
+      hashes: new Set((parsed as string[]).map((h) => h.toLowerCase())),
+      source: "network", // treat inline env as authoritative
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Loads the allowlist with full caching semantics:
+ *   - SABHA_ALLOWLIST_HASHES env var present → use inline hashes, skip net
  *   - fresh cache (< TTL)            → serve from cache, no network
  *   - stale/absent cache             → fetch; on success refresh cache
  *   - fetch fails but cache in grace → serve stale (offline grace)
@@ -142,6 +171,11 @@ export async function loadAllowlist(
   const now = opts.now ?? Date.now;
   const fetchImpl = opts.fetchImpl ?? globalThis.fetch;
   const url = resolveUrl(opts);
+
+  // Server-mode fast path: when SABHA_ALLOWLIST_HASHES is set, skip the
+  // network fetch and disk cache entirely. Revoke = update env + redeploy.
+  const inline = parseInlineHashes(env);
+  if (inline) return inline;
 
   const cache = readCache(env);
   const cacheAge = cache ? now() - Date.parse(cache.fetchedAt) : Infinity;

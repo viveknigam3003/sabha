@@ -206,12 +206,35 @@ export function emitEvent(
 function mirrorToPosthog(event: TelemetryEvent, rt: TelemetryRuntime): void {
   if (!rt.config.posthog.enabled) return;
   try {
-    const email = readEmailSync(rt.env);
+    // Prefer the process-level email resolver (set by the remote server to
+    // read from AsyncLocalStorage). Falls back to the local identity file in
+    // stdio mode.
+    const email = _emailResolver
+      ? (_emailResolver() ?? readEmailSync(rt.env))
+      : readEmailSync(rt.env);
     // Long-lived MCP process: fire-and-forget, never await.
     void captureEvent(event, { email }, { env: rt.env });
   } catch {
     // never throw
   }
+}
+
+/**
+ * Process-level override for PostHog email resolution.
+ * In remote server mode, the mcp-server package sets this at boot to read
+ * from the per-request AsyncLocalStorage context. In stdio mode this is null
+ * and readEmailSync() is used instead.
+ */
+let _emailResolver: (() => string | undefined) | null = null;
+
+/**
+ * Register a process-level email resolver for server mode. Called once at
+ * server startup (before any requests). In stdio mode this is never called.
+ */
+export function setPosthogEmailResolver(
+  resolver: () => string | undefined,
+): void {
+  _emailResolver = resolver;
 }
 
 /** Test-only: clears the singleton so the next initTelemetry starts fresh. */
