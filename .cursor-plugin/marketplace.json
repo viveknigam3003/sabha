@@ -23,7 +23,7 @@
       "source": {
         "source": "npm",
         "package": "@sabhahq/argus",
-        "version": "^0.1.0"
+        "version": "^0.2.0"
       },
       "dependencies": ["sabha-core"],
       "description": "Data-engineer general: connector-agnostic data verbs (New Relic, Redash) + telemetry baselining + KPI health + instrumentation audits. Review-gated apply."
@@ -33,7 +33,7 @@
       "source": {
         "source": "npm",
         "package": "@sabhahq/narada",
-        "version": "^0.1.0"
+        "version": "^0.2.0"
       },
       "dependencies": ["sabha-core"],
       "description": "Messenger general: connector-agnostic messaging signal triage and reply drafting on top of a watchlist + voice profile (Slack today)."
