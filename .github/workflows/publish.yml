@@ -44,9 +44,14 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm -r build
+      # Build/test ONLY the published packages (+ their deps). The private
+      # @sabhahq/mcp-server is deliberately excluded: it depends on @argus/* and
+      # @narada/* via workspace links to sibling repos that aren't checked out in
+      # CI, so a recursive `pnpm -r build` would fail to resolve them. It's never
+      # published, so it has no place in the release pipeline.
+      - run: pnpm --filter @sabhahq/telemetry --filter @sabhahq/core build
 
-      - run: pnpm -r test
+      - run: pnpm --filter @sabhahq/telemetry --filter @sabhahq/core test
 
       - run: node scripts/validate.mjs
 
