@@ -5,16 +5,30 @@
     "email": "vivek.nigam@postman.com"
   },
   "metadata": {
-    "description": "Sabha — a marketplace of agentic generals. Ships the data-engineer (Argus) and messenger (Narada) generals plus the shared sabha-core runtime (telemetry, allowlist gate, auto-update).",
-    "version": "0.2.0"
+    "description": "Sabha — a marketplace of agentic generals. Ships the data-engineer (Argus) and messenger (Narada) generals plus the shared sabha-core runtime (telemetry, allowlist gate, auto-update). Install the `sabha` umbrella for everything at once, or a single general on its own.",
+    "version": "0.3.0"
   },
   "plugins": [
+    {
+      "name": "sabha",
+      "source": {
+        "source": "npm",
+        "package": "@sabhahq/sabha",
+        "version": "^0.3.0"
+      },
+      "dependencies": [
+        "sabha-core",
+        "argus",
+        "narada"
+      ],
+      "description": "Umbrella: installs the shared sabha-core runtime plus every general (Argus, Narada) in one step. Each general contributes its own MCP server. Install a single general directly if you only want one."
+    },
     {
       "name": "sabha-core",
       "source": {
         "source": "npm",
         "package": "@sabhahq/core",
-        "version": "^0.2.0"
+        "version": "^0.3.0"
       },
       "description": "Shared Sabha runtime: consolidated telemetry, one-time `sabha auth <email>`, the email-allowlist gate, and the auto-update hint. Installed automatically as a dependency of every Sabha agent."
     },
@@ -23,9 +37,11 @@
       "source": {
         "source": "npm",
         "package": "@sabhahq/argus",
-        "version": "^0.2.0"
+        "version": "^0.3.0"
       },
-      "dependencies": ["sabha-core"],
+      "dependencies": [
+        "sabha-core"
+      ],
       "description": "Data-engineer general: connector-agnostic data verbs (New Relic, Redash) + telemetry baselining + KPI health + instrumentation audits. Review-gated apply."
     },
     {
@@ -33,9 +49,11 @@
       "source": {
         "source": "npm",
         "package": "@sabhahq/narada",
-        "version": "^0.2.0"
+        "version": "^0.3.0"
       },
-      "dependencies": ["sabha-core"],
+      "dependencies": [
+        "sabha-core"
+      ],
       "description": "Messenger general: connector-agnostic messaging signal triage and reply drafting on top of a watchlist + voice profile (Slack today)."
     }
   ]
