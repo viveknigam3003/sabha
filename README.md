@@ -1,120 +1,63 @@
-# Sabha
+# Sabha — marketplace catalog
 
-One marketplace for the agentic *generals* — **Argus** (data-engineer) and
-**Narada** (messenger) today — on top of a shared runtime (`sabha-core`).
+The public **marketplace catalog** for the agentic *generals* — **Argus**
+(data-engineer) and **Narada** (messenger) — on top of a shared runtime
+(`sabha-core`).
 
-Stage 1 ships these to friends with **per-user observability** and **one-step
-auto-updates**, gated by a hashed email allowlist. **No hosted backend.**
+This repo is **catalog-only**: it holds the marketplace manifests, the access
+allowlist, and nothing else. All source, build, CI, and publishing live in the
+**private monorepo `viveknigam3003/sabha-monorepo`**, which publishes the npm
+packages and auto-syncs the manifests here on each release.
 
-## Packages
+## What's here
 
-| Package | What it is |
+| File | Role |
 | --- | --- |
-| `@sabhahq/telemetry` | One consolidated telemetry stream at `~/.local/share/sabha/telemetry`. Every event carries a first-class `agent` property. Ships the `sabha-telemetry` hook recorder + the shared `withTelemetry` MCP middleware + a redacted, client-side PostHog mirror. |
-| `@sabhahq/core` | The `sabha-core` plugin: shared rules, the `_sabha_owner` hooks set, the one-time `sabha auth <email>` identity, the SHA-256 email-allowlist gate, and the daily auto-update hint. |
+| `.claude-plugin/marketplace.json`, `.cursor-plugin/marketplace.json` | The marketplace catalog (synced from the monorepo on release). |
+| `allowlist.json` | The SHA-256 email allowlist the gate fetches at runtime. |
 
-The marketplace (`.claude-plugin/marketplace.json` + `.cursor-plugin/marketplace.json`)
-lists three plugins, all installed from npm:
+## Plugins (all installed from npm)
 
-- `sabha-core` → `@sabhahq/core`
-- `argus` → `@sabhahq/argus` (built from [`viveknigam3003/argus`](https://github.com/viveknigam3003/argus)), `dependencies: ["sabha-core"]`
-- `narada` → `@sabhahq/narada` (built from [`viveknigam3003/narada`](https://github.com/viveknigam3003/narada)), `dependencies: ["sabha-core"]`
+- `sabha` → `@sabhahq/sabha` — umbrella; installs everything at once (`dependencies: ["sabha-core", "argus", "narada"]`)
+- `sabha-core` → `@sabhahq/core` — shared runtime (identity, gate, telemetry, auto-update)
+- `argus` → `@sabhahq/argus`, `dependencies: ["sabha-core"]`
+- `narada` → `@sabhahq/narada`, `dependencies: ["sabha-core"]`
 
 ## How a friend installs
 
 ```text
 /plugin marketplace add viveknigam3003/sabha
-/plugin install argus@sabha               # pulls sabha-core automatically
-npx @sabhahq/core auth you@example.com    # one-time identity (gate + telemetry)
+/plugin install sabha@sabha               # everything; or `argus@sabha` for just one
+npx @sabhahq/core auth you@example.com     # one-time identity (gate + telemetry)
 ```
 
-> Use `npx @sabhahq/core auth …`, **not** `npx sabha …` — the bare `sabha`
-> name belongs to an unrelated npm package. The marketplace install doesn't put
-> a `sabha` binary on your PATH, so `npx @sabhahq/core` is the portable way to
-> run the CLI. (If you'd rather have `sabha` directly, `npm i -g @sabhahq/core`.)
+> Use `npx @sabhahq/core auth …`, **not** `npx sabha …` — the bare `sabha` name
+> belongs to an unrelated npm package. (If you'd rather have `sabha` directly,
+> `npm i -g @sabhahq/core`.)
 
 Updates are one step: `/plugin marketplace update` + restart. A daily
 `sessionStart` hint fires when a newer version is published.
 
-## Identity, gate, telemetry (the two auth layers — don't conflate)
+## Identity & gate
 
-- **Sabha → user (new, shared):** your **email**, stored once at
-  `~/.config/sabha/identity.json` by `sabha auth`. Read by every general for the
-  allowlist gate and as the PostHog `distinct_id`.
-- **Sabha → services (unchanged, local):** provider creds stay where they are
-  today (Argus's `~/.config/argus/`, Narada's Slack MCP). Vault centralization is
-  Stage 3.
+- **Identity:** your **email**, stored once at `~/.config/sabha/identity.json`
+  by `sabha auth`. Read by every general for the allowlist gate and as the
+  PostHog `distinct_id`.
+- **Gate fails closed:** privileged tools refuse unless your email's SHA-256
+  hash is in `allowlist.json` (fetched + cached, with offline grace). Setup/help
+  tools (`sabha auth`, each general's `doctor`) are never gated.
 
-The **gate fails closed**: privileged tools refuse unless your email's SHA-256
-hash is on the maintainer's allowlist (fetched + cached, with offline grace).
-Setup/help tools (`sabha auth`, each general's `doctor`) are never gated.
+The gate fetches `allowlist.json` from this repo's raw URL
+(`https://raw.githubusercontent.com/viveknigam3003/sabha/main/allowlist.json`),
+so grant/revoke is just a commit here — no release needed.
 
-> Stage 1 is a **soft deterrent by design** — public npm means the code is open
-> and patchable. Hard enforcement arrives at Stage 2 (remote MCP).
+## Granting / revoking access
 
-## Local development
+`allowlist.json` stores only SHA-256 hashes of `email.trim().toLowerCase()`.
+Compute a hash and add/remove it from the `hashes` array, then commit + push:
 
 ```bash
-pnpm install
-pnpm -r build
-pnpm -r test
-node scripts/validate.mjs
+node -e "console.log(require('crypto').createHash('sha256').update(process.argv[1].trim().toLowerCase()).digest('hex'))" "person@example.com"
 ```
 
-### Configuration via `.env`
-
-All `SABHA_*` knobs can be set as real shell env vars **or** in a `.env` file —
-loaded at MCP/CLI startup by `loadSabhaEnv()`. Precedence (highest first):
-
-```text
-real shell env  >  $SABHA_ENV_FILE  >  ~/.config/sabha/.env
-                >  $CLAUDE_PLUGIN_ROOT/.env  >  <cwd>/.env
-```
-
-Real exports always win; `.env` files only fill gaps, and only `SABHA_*` (plus
-`XDG_*`/`HOME`) keys are applied. Copy `.env.example` to get started; per-user
-runtime config belongs in `~/.config/sabha/.env`. `sabha doctor` reports which
-files were loaded.
-
-Useful env switches:
-
-| Env var | Effect |
-| --- | --- |
-| `SABHA_GATE_DISABLED=1` | Bypass the allowlist gate (maintainer/dev only). |
-| `SABHA_ALLOWLIST_URL` | Override the allowlist source. |
-| `SABHA_POSTHOG_KEY` / `SABHA_POSTHOG_HOST` | Override the bundled PostHog target. |
-| `SABHA_POSTHOG_DISABLED=1` | Disable the PostHog mirror (local JSONL still written). |
-| `SABHA_MARKETPLACE_URL` | Override the update-check manifest source. |
-
-## Publishing
-
-`@sabhahq/core` + `@sabhahq/telemetry` publish from this repo via
-`.github/workflows/publish.yml` on a GitHub Release. `@sabhahq/argus` +
-`@sabhahq/narada` publish from their own repos (each bundles its built MCP
-`dist/`). All use **npm Trusted Publishing (OIDC)** — no `NPM_TOKEN`.
-
-Publishing setup (one-time):
-
-1. **Bootstrap each new package once, manually** (trusted publishing can only be
-   attached to a package that already exists). From each repo, build then
-   publish with your interactive 2FA code:
-   ```bash
-   # sabha repo
-   pnpm -r build
-   pnpm --filter @sabhahq/telemetry publish --otp=<code>
-   pnpm --filter @sabhahq/core publish --otp=<code>
-   # argus / narada repos
-   pnpm install && pnpm -r build
-   pnpm --filter @sabhahq/argus publish --otp=<code>     # (narada: @sabhahq/narada)
-   ```
-2. **Attach a Trusted Publisher** on npmjs.com for each package → GitHub Actions,
-   owner `viveknigam3003`, the matching repo, and workflow filename
-   (`publish.yml` for core/telemetry, `publish-sabha.yml` for argus/narada).
-   After this, every release publishes tokenless via the workflows above.
-3. Set a real PostHog project key (replace the bundled placeholder, or rely on
-   the `SABHA_POSTHOG_KEY` env at runtime — the placeholder fails closed and
-   never sends).
-4. Maintain the allowlist with `pnpm allowlist add <email>` (writes
-   `./allowlist.json`, hashes only) and commit it — the gate's default
-   `SABHA_ALLOWLIST_URL` is this repo's raw `allowlist.json`, so granting/
-   revoking access is just a push (no release).
+(The monorepo also ships `pnpm allowlist add <email>` / `pnpm gen-hash` helpers.)
